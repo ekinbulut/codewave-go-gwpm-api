@@ -1,7 +1,7 @@
 .PHONY: build run clean
 
 build:
-	go build -o build/app cmd/main.go
+	go build -o build/gwpm-server cmd/main.go
 
 run:
 	go run cmd/main.go
