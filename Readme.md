@@ -1,5 +1,7 @@
 # Hermes Messeging Relay
 
+[![Go](https://github.com/ekinbulut/gwpm-api/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/ekinbulut/gwpm-api/actions/workflows/go.yml)
+
 ## Features
 
  * Whatsapp Business Relay
