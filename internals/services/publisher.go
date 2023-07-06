@@ -5,15 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"hermes/cmd/config"
+	"hermes/contracts/data"
 	"hermes/internals/api/presenter"
 
 	"time"
 
+	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type IPublisher interface {
-	Publish(message presenter.Message) error
+	Publish(message presenter.Message) (uuid.UUID, error)
 }
 
 type Publisher struct {
@@ -34,30 +36,32 @@ func NewPublisher(config *config.RabbitMqConfiguration) IPublisher {
 	}
 }
 
-func (r *Publisher) Publish(message presenter.Message) error {
+func (r *Publisher) Publish(message presenter.Message) (uuid.UUID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	ch, err := r.connection.Channel()
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	defer ch.Close()
 
 	_, err = ch.QueueDeclare(r.config.Queue, true, false, false, false, nil)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
-	// convert message to json
-	pmessage, _ := json.Marshal(message)
+	// create a data contract
+	dataContract := data.NewDataContract(message)
+
+	pmessage, _ := json.MarshalIndent(dataContract, "", " ")
 
 	ch.PublishWithContext(ctx, "", r.config.Queue, false, false, amqp.Publishing{
 		ContentType: "application/json",
 		Body:        pmessage,
 	})
 
-	return nil
+	return dataContract.TransactionId, nil
 }
 
 func (r *Publisher) Close() {

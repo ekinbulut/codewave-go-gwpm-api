@@ -3,7 +3,7 @@ rabbitmq:
   port: 5672
   username: "guest"
   password: "guest"
-  queue: "test"
+  queue: "db_status_pool"
   exchange: ""
 
 server:

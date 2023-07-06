@@ -18,10 +18,15 @@ func TestRelayPublishMessage(t *testing.T) {
 	}
 
 	message := &presenter.Message{
-		Message: "test",
+		Numbers: []string{"11111111111"},
+		Template: struct {
+			Name string `json:"name"`
+		}{
+			Name: "test",
+		},
 	}
 	relayer := NewPublisher(config)
-	err := relayer.Publish(*message)
+	_, err := relayer.Publish(*message)
 
 	assert.NoError(t, err, "Publish should not fail")
 }

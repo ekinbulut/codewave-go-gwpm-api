@@ -1,21 +1,29 @@
 package presenter
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+)
 
 type Message struct {
-	Message string `json:"message"`
+	Numbers  []string `json:"numbers"`
+	Template struct {
+		Name string `json:"name"`
+	} `json:"template"`
 }
 
-func MessageSuccessResponse(message *Message) *fiber.Map {
+func MessageSuccessResponse(id uuid.UUID, message *Message) *fiber.Map {
 	return &fiber.Map{
+		"id":     id,
 		"data":   message,
 		"status": true,
 		"error":  nil,
 	}
 }
 
-func MessageErrorResponse(err error) *fiber.Map {
+func MessageErrorResponse(id uuid.UUID, err error) *fiber.Map {
 	return &fiber.Map{
+		"id":     id,
 		"data":   nil,
 		"status": false,
 		"error":  err.Error(),
