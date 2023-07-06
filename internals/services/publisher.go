@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"hermes/cmd/config"
 	"hermes/internals/api/presenter"
 
@@ -22,7 +23,8 @@ type Publisher struct {
 
 func NewPublisher(config *config.RabbitMqConfiguration) IPublisher {
 
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", config.Username, config.Password, config.Host, config.Port)
+	conn, err := amqp.Dial(connectionString)
 	if err != nil {
 		return nil
 	}
