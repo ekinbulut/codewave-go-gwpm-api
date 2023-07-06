@@ -35,10 +35,6 @@ func (s *Server) Run() {
 	// register routes
 	routes.MessageRouter(api)
 
-	s.app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-
 	port := s.config.Port
 	fmt.Printf("Server running on port %d\n", port)
 
