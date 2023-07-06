@@ -39,10 +39,11 @@ func (s *Server) Run() {
 
 	api := s.app.Group("/api/v1")
 
-	publisher := services.NewRelayer(&s.config.Rabbitmq)
+	publisher := services.NewPublisher(&s.config.Rabbitmq)
 
 	// register routes
 	routes.MessageRouter(api, publisher)
+	routes.HealthCheck(api)
 
 	port := s.config.Server.Port
 	fmt.Printf("Server running on port %d\n", port)

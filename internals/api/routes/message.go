@@ -7,6 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func MessageRouter(app fiber.Router, publisher *services.Relayer) {
+func MessageRouter(app fiber.Router, publisher services.IPublisher) {
 	app.Post("/message", handlers.PostMessage(publisher))
 }

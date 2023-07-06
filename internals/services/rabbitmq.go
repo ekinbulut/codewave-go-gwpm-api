@@ -11,28 +11,28 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Publisher interface {
+type IPublisher interface {
 	Publish(message presenter.Message) error
 }
 
-type Relayer struct {
+type Publisher struct {
 	connection *amqp.Connection
 	config     *config.RabbitMqConfiguration
 }
 
-func NewRelayer(config *config.RabbitMqConfiguration) *Relayer {
+func NewPublisher(config *config.RabbitMqConfiguration) IPublisher {
 
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		return nil
 	}
-	return &Relayer{
+	return &Publisher{
 		connection: conn,
 		config:     config,
 	}
 }
 
-func (r *Relayer) Publish(message presenter.Message) error {
+func (r *Publisher) Publish(message presenter.Message) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -58,6 +58,6 @@ func (r *Relayer) Publish(message presenter.Message) error {
 	return nil
 }
 
-func (r *Relayer) Close() {
+func (r *Publisher) Close() {
 	r.connection.Close()
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func PostMessage(publisher *services.Relayer) fiber.Handler {
+func PostMessage(publisher services.IPublisher) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
 		var requestBody presenter.Message
@@ -17,8 +17,6 @@ func PostMessage(publisher *services.Relayer) fiber.Handler {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenter.MessageErrorResponse(err))
 		}
-
-		// TODO: send message to rabbitmq
 
 		err = publisher.Publish(requestBody)
 		if err != nil {
