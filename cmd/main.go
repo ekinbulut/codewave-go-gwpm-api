@@ -16,7 +16,7 @@ func main() {
 		fmt.Printf("Error reading config file, %s", err)
 	}
 
-	app := server.NewServer(&configuration.Server)
+	app := server.NewServer(&configuration)
 	app.Run()
 }
 

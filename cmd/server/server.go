@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"hermes/cmd/config"
 	"hermes/internals/api/routes"
+	"hermes/internals/services"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type Server struct {
-	config *config.ServerConfiguration
+	config *config.Configurations
 	app    *fiber.App
 }
 
-func NewServer(config *config.ServerConfiguration) *Server {
+func NewServer(config *config.Configurations) *Server {
 	return &Server{
 		config: config,
 		app:    fiber.New(),
@@ -24,22 +25,26 @@ func NewServer(config *config.ServerConfiguration) *Server {
 func (s *Server) Run() {
 
 	if s.config == nil {
-		s.config = &config.ServerConfiguration{
-			Port: 8080,
-			Host: "localhost",
+		s.config = &config.Configurations{
+			Server: config.ServerConfiguration{
+				Port: 8080,
+				Host: "localhost",
+			},
 		}
 	}
 
-	if s.config.Port == 0 {
-		s.config.Port = 8080
+	if s.config.Server.Port == 0 {
+		s.config.Server.Port = 8080
 	}
 
 	api := s.app.Group("/api/v1")
 
-	// register routes
-	routes.MessageRouter(api)
+	publisher := services.NewRelayer(&s.config.Rabbitmq)
 
-	port := s.config.Port
+	// register routes
+	routes.MessageRouter(api, publisher)
+
+	port := s.config.Server.Port
 	fmt.Printf("Server running on port %d\n", port)
 
 	log.Fatal(s.app.Listen(fmt.Sprintf(":%d", port)))
