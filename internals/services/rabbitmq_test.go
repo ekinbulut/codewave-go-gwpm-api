@@ -1,6 +1,7 @@
 package services
 
 import (
+	"hermes/cmd/config"
 	"hermes/internals/api/presenter"
 	"testing"
 
@@ -9,11 +10,11 @@ import (
 
 func TestRelayCreate(t *testing.T) {
 
-	var config = &Config{
-		Port:      8080,
-		Host:      "localhost",
-		Username:  "guest",
-		QueueName: "test",
+	var config = &config.RabbitMqConfiguration{
+		Port:     8080,
+		Host:     "localhost",
+		Username: "guest",
+		Queue:    "test",
 	}
 
 	relayer := NewRelayer(config)
@@ -23,11 +24,11 @@ func TestRelayCreate(t *testing.T) {
 
 func TestRelayPublishMessage(t *testing.T) {
 
-	var config = &Config{
-		Port:      8080,
-		Host:      "localhost",
-		Username:  "guest",
-		QueueName: "test",
+	var config = &config.RabbitMqConfiguration{
+		Port:     8080,
+		Host:     "localhost",
+		Username: "guest",
+		Queue:    "test",
 	}
 
 	message := &presenter.Message{

@@ -32,7 +32,11 @@ docker.app.build:
 	docker build -t dev-rabbitmq-app .
 
 docker.stop:
-	docker stop dev-rabbit docker.app
+	docker stop dev-rabbitmq docker.app
+
+
+docker.stop.rabbitmq:
+	docker stop dev-rabbitmq
 	
 docker.network:
 	docker network inspect dev-network >/dev/null 2>&1 || \

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"hermes/cmd/config"
 	"hermes/internals/api/presenter"
 
 	"time"
@@ -11,15 +12,15 @@ import (
 )
 
 type Publisher interface {
-	Publish(message string)
+	Publish(message presenter.Message) error
 }
 
 type Relayer struct {
 	connection *amqp.Connection
-	config     *Config
+	config     *config.RabbitMqConfiguration
 }
 
-func NewRelayer(config *Config) *Relayer {
+func NewRelayer(config *config.RabbitMqConfiguration) *Relayer {
 
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
@@ -41,7 +42,7 @@ func (r *Relayer) Publish(message presenter.Message) error {
 	}
 	defer ch.Close()
 
-	_, err = ch.QueueDeclare(r.config.QueueName, true, false, false, false, nil)
+	_, err = ch.QueueDeclare(r.config.Queue, true, false, false, false, nil)
 	if err != nil {
 		return err
 	}
@@ -49,7 +50,7 @@ func (r *Relayer) Publish(message presenter.Message) error {
 	// convert message to json
 	pmessage, _ := json.Marshal(message)
 
-	ch.PublishWithContext(ctx, "", r.config.QueueName, false, false, amqp.Publishing{
+	ch.PublishWithContext(ctx, "", r.config.Queue, false, false, amqp.Publishing{
 		ContentType: "application/json",
 		Body:        pmessage,
 	})

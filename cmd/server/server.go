@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"hermes/cmd/config"
 	"hermes/internals/api/routes"
 	"log"
 
@@ -9,11 +10,11 @@ import (
 )
 
 type Server struct {
-	config *Config
+	config *config.ServerConfiguration
 	app    *fiber.App
 }
 
-func NewServer(config *Config) *Server {
+func NewServer(config *config.ServerConfiguration) *Server {
 	return &Server{
 		config: config,
 		app:    fiber.New(),
@@ -23,7 +24,10 @@ func NewServer(config *Config) *Server {
 func (s *Server) Run() {
 
 	if s.config == nil {
-		s.config = NewConfig()
+		s.config = &config.ServerConfiguration{
+			Port: 8080,
+			Host: "localhost",
+		}
 	}
 
 	if s.config.Port == 0 {
