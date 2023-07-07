@@ -23,15 +23,20 @@ type Publisher struct {
 	config     *config.RabbitMqConfiguration
 }
 
+var connection *amqp.Connection
+
 func NewPublisher(config *config.RabbitMqConfiguration) IPublisher {
 
 	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", config.Username, config.Password, config.Host, config.Port)
-	conn, err := amqp.Dial(connectionString)
-	if err != nil {
-		return nil
+	var err error
+	if connection == nil {
+		connection, err = amqp.Dial(connectionString)
+		if err != nil {
+			return nil
+		}
 	}
 	return &Publisher{
-		connection: conn,
+		connection: connection,
 		config:     config,
 	}
 }

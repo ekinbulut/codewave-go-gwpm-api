@@ -41,15 +41,21 @@ func (s *Server) Run() {
 		s.config.Server.Port = 8080
 	}
 
-	api := s.app.Group("/api/v1")
-
-	publisher := services.NewPublisher(&s.config.Rabbitmq)
-
 	s.configure()
 
+	router := s.app.Group("/api/v1")
+
+	// TODO: publisher call not to be here, should be in handler
+	// dependecies should be fixed
+	publisher := services.NewPublisher(&s.config.Rabbitmq)
+
+	if publisher == nil {
+		log.Fatal("Rabbitmq connection failed")
+	}
+
 	// register routes
-	routes.MessageRouter(api, publisher)
-	routes.HealthCheck(api)
+	routes.MessageRouter(router, publisher)
+	routes.HealthCheck(router)
 
 	port := s.config.Server.Port
 	fmt.Printf("Server running on port %d\n", port)
