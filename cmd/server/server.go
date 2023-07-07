@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"hermes/cmd/config"
+	"hermes/internals/api/handlers"
 	"hermes/internals/api/routes"
 	"hermes/internals/services"
 	"log"
@@ -57,7 +58,10 @@ func (s *Server) Run() {
 	}
 
 	// register routes
-	routes.MessageRouter(router, publisher)
+
+	handlers := handlers.NewMessageHandler(publisher)
+
+	routes.MessageRouter(router, handlers)
 	routes.HealthCheck(router)
 
 	c := make(chan os.Signal, 1)
