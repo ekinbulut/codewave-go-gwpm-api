@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -61,10 +62,15 @@ func (s *Server) Run() {
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
+
+	var serverShutdown sync.WaitGroup
+
 	go func() {
 		<-c
 		fmt.Println("Gracefully shutting down...")
-		_ = s.app.Shutdown()
+		serverShutdown.Add(1)
+		defer serverShutdown.Done()
+		_ = s.app.ShutdownWithTimeout(60 * time.Second)
 	}()
 
 	port := s.config.Server.Port
@@ -73,6 +79,8 @@ func (s *Server) Run() {
 	if err := s.app.Listen(fmt.Sprintf(":%d", port)); err != nil {
 		log.Fatal(err)
 	}
+
+	serverShutdown.Wait()
 }
 
 func (s *Server) configure() {
