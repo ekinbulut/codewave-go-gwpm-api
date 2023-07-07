@@ -6,6 +6,8 @@ import (
 	"hermes/internals/api/routes"
 	"hermes/internals/services"
 	"log"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -57,10 +59,20 @@ func (s *Server) Run() {
 	routes.MessageRouter(router, publisher)
 	routes.HealthCheck(router)
 
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		_ = <-c
+		fmt.Println("Gracefully shutting down...")
+		_ = s.app.Shutdown()
+	}()
+
 	port := s.config.Server.Port
 	fmt.Printf("Server running on port %d\n", port)
 
-	log.Fatal(s.app.Listen(fmt.Sprintf(":%d", port)))
+	if err := s.app.Listen(fmt.Sprintf(":%d", port)); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (s *Server) configure() {
