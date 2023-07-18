@@ -9,6 +9,7 @@ type DataContract struct {
 	Description   string      `json:"description"`
 	Version       string      `json:"version"`
 	Data          interface{} `json:"data"`
+	Status        string      `json:"status"`
 }
 
 func NewDataContract(data interface{}) *DataContract {
@@ -19,5 +20,6 @@ func NewDataContract(data interface{}) *DataContract {
 		Description:   "This data contract includes whatsapp message informations",
 		Version:       "1.0",
 		Data:          data,
+		Status:        "NEW",
 	}
 }
