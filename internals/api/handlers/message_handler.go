@@ -9,7 +9,17 @@ import (
 	"github.com/google/uuid"
 )
 
-func PostMessage(publisher services.IPublisher) fiber.Handler {
+type MessageHandler struct {
+	publisher services.IPublisher
+}
+
+func NewMessageHandler(publisher services.IPublisher) *MessageHandler {
+	return &MessageHandler{
+		publisher: publisher,
+	}
+}
+
+func (h *MessageHandler) PostMessage() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
 		var requestBody presenter.Message
@@ -19,7 +29,7 @@ func PostMessage(publisher services.IPublisher) fiber.Handler {
 			return c.JSON(presenter.MessageErrorResponse(uuid.Nil, err))
 		}
 
-		transactionId, err := publisher.Publish(requestBody)
+		transactionId, err := h.publisher.Publish(requestBody)
 		if err != nil {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenter.MessageErrorResponse(transactionId, err))

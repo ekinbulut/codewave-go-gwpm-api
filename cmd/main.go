@@ -43,7 +43,5 @@ func ReadConfigs() (config c.Configurations, err error) {
 		return configuration, err
 	}
 
-	fmt.Printf("Configuration: %+v", configuration)
-
 	return configuration, nil
 }

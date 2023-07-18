@@ -3,11 +3,19 @@ package server
 import (
 	"fmt"
 	"hermes/cmd/config"
+	"hermes/internals/api/handlers"
 	"hermes/internals/api/routes"
 	"hermes/internals/services"
 	"log"
+	"os"
+	"os/signal"
+	"sync"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 type Server struct {
@@ -37,16 +45,67 @@ func (s *Server) Run() {
 		s.config.Server.Port = 8080
 	}
 
-	api := s.app.Group("/api/v1")
+	s.configure()
 
+	router := s.app.Group("/api/v1")
+
+	// TODO: publisher call not to be here, should be in handler
+	// dependecies should be fixed
 	publisher := services.NewPublisher(&s.config.Rabbitmq)
 
+	if publisher == nil {
+		log.Fatal("Rabbitmq connection failed")
+	}
+
 	// register routes
-	routes.MessageRouter(api, publisher)
-	routes.HealthCheck(api)
+
+	handlers := handlers.NewMessageHandler(publisher)
+
+	routes.MessageRouter(router, handlers)
+	routes.HealthCheck(router)
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	var serverShutdown sync.WaitGroup
+
+	go func() {
+		<-c
+		fmt.Println("Gracefully shutting down...")
+		serverShutdown.Add(1)
+		defer serverShutdown.Done()
+		_ = s.app.ShutdownWithTimeout(60 * time.Second)
+	}()
 
 	port := s.config.Server.Port
 	fmt.Printf("Server running on port %d\n", port)
 
-	log.Fatal(s.app.Listen(fmt.Sprintf(":%d", port)))
+	if err := s.app.Listen(fmt.Sprintf(":%d", port)); err != nil {
+		log.Fatal(err)
+	}
+
+	serverShutdown.Wait()
+}
+
+func (s *Server) configure() {
+	s.addCors()
+	s.addRatelimiter()
+	s.addLogger()
+}
+
+func (s *Server) addRatelimiter() {
+
+	s.app.Use(limiter.New(limiter.Config{
+		Max:               s.config.RateLimit.Max,
+		Expiration:        time.Duration(s.config.RateLimit.Expiration) * time.Second,
+		LimiterMiddleware: limiter.SlidingWindow{},
+	}))
+}
+
+func (s *Server) addLogger() {
+	s.app.Use(logger.New())
+}
+
+func (s *Server) addCors() {
+	s.app.Use(cors.New())
 }

@@ -1,8 +1,9 @@
 package config
 
 type Configurations struct {
-	Server   ServerConfiguration
-	Rabbitmq RabbitMqConfiguration
+	Server    ServerConfiguration
+	Rabbitmq  RabbitMqConfiguration
+	RateLimit RateLimiterConfigurations
 }
 
 type RabbitMqConfiguration struct {
@@ -18,4 +19,9 @@ type ServerConfiguration struct {
 	Port int
 	Host string
 	Env  string
+}
+
+type RateLimiterConfigurations struct {
+	Max        int
+	Expiration int
 }

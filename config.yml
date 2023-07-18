@@ -10,3 +10,7 @@ server:
   port: 8080
   host: "localhost"
   env: "dev"
+
+ratelimit:
+  max: 20
+  expiration: 30
